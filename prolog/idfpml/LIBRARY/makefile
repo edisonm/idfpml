@@ -109,8 +109,9 @@ _CFLAGS_CONFIG :=
 _CFLAGS_OS     := $(call HostOsTypeSelect, -DLINUX, -DWINDOWS)
 _CFLAGS_ARCH   := $(call HostArchTypeSelect,-Dia32,-DITANIUM -Dia64, -Defi2)
 _CFLAGS_CC     :=
-_CFLAGS_OPT    := 
-    
+# -FPIC flag is needed to link in SWI-Prolog: --EMM
+_CFLAGS_OPT    := -fPIC
+
 ifeq ($(BID_BIG_ENDIAN),true)
     _CFLAGS_CONFIG += -DBID_BIG_ENDIAN=1
 endif
@@ -300,9 +301,9 @@ BID_COMMON_OPS := \
 COMMON  := strtod wcstod
 
 BID_32  := sub to_bid128 to_bid64
- 
+
 BID_64  := to_bid128
- 
+
 BID_128 := 2_str_tables
 
 BID     := \
@@ -324,7 +325,7 @@ BID_INTERNAL_OBJS := \
 	$(call CrossCat3, $(OBJ_DIR)/bid128_,$(BID_128),.$O)                \
 	$(call CrossCat3, $(OBJ_DIR)/bid_,   $(BID),.$O)                    \
 	$(call CrossCat3, $(OBJ_DIR)/,       $(BID_MISC),.$O)
-       
+
 ALL_BID_OBJS := $(BID_TRANS_OBJS) $(BID_INTERNAL_OBJS)
 
 ifneq ($(strip $(USE_COMPILER_F128_TYPE)),true)
@@ -445,7 +446,7 @@ $(F53_OBJS) :: $(F128_DIR)/dpml_private.h $(F128_DIR)/dpml_globals.h \
 BUILD_FILE_NAME = $(basename $(notdir $@)).h
 D_F_NAME          = -D$(call ToUpper,$(W2))
 D_F_TYPE          = -D$(call ToUpper,$(W3))_FLOAT
- 
+
 $(OBJ_DIR)/dpml_asinh_t.$O  :: $(F128_DIR)/sqrt_tab_t.c
 
 $(OBJ_DIR)/dpml_erf_t.$O \
@@ -453,34 +454,34 @@ $(OBJ_DIR)/dpml_asinh_t.$O  :: $(OBJ_DIR)/dpml_%_t.$O : $(F128_DIR)/dpml_%.c \
                                $(F128_DIR)/dpml_%_t.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) $(D_F_NAME) \
              -DBUILD_FILE_NAME=$(BUILD_FILE_NAME) $<
- 
+
 $(OBJ_DIR)/dpml_rt_lgamma_t.$O :: $(F128_DIR)/dpml_lgamma.c \
                                   $(F128_DIR)/dpml_lgamma_t.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) -DT_FLOAT -DBUILD_FILE_NAME=dpml_lgamma_t.h $<
- 
+
 $(OBJ_DIR)/dpml_lgamma_t.$O :: $(F128_DIR)/dpml_lgamma.c \
                                   $(F128_DIR)/dpml_lgamma_t.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_TYPE) -DDO_LGAMMA -DHACK_GAMMA_INLINE=0 \
              -DBUILD_FILE_NAME=dpml_lgamma_t.h $<
- 
+
 $(OBJ_DIR)/dpml_acosh_t.$O :: $(F128_DIR)/dpml_asinh.c $(F128_DIR)/dpml_acosh_t.h \
                               $(F128_DIR)/sqrt_tab_t.c
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) $<
- 
+
 $(OBJ_DIR)/dpml_erfc_t.$O  :: $(F128_DIR)/dpml_erf.c   $(F128_DIR)/dpml_erf_t.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) \
         -DBUILD_FILE_NAME=dpml_erf_t.h $<
- 
+
 $(OBJ_DIR)/dpml_log1p_t.$O :: $(F128_DIR)/dpml_log.c $(F128_DIR)/dpml_log_t.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) $<
- 
+
 $(OBJ_DIR)/dpml_log2_t.$O :: $(F128_DIR)/dpml_log.c $(F128_DIR)/dpml_log_t.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) $<
- 
+
 $(OBJ_DIR)/dpml_cbrt_t.$O :: $(F128_DIR)/dpml_cbrt.c $(F128_DIR)/dpml_cbrt_t_table.c
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) \
         -DBUILD_FILE_NAME=dpml_cbrt_t_table.c $<
- 
+
 $(OBJ_DIR)/dpml_exp10_t.$O \
 $(OBJ_DIR)/dpml_exp2_t.$O  :: $(F128_DIR)/dpml_exp.c $(F128_DIR)/dpml_pow_t_table.c
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) -DUSE_CONTROL87 $<
@@ -490,17 +491,17 @@ $(OBJ_DIR)/dpml_expm1_t.$O :: $(F128_DIR)/dpml_expm1.c $(F128_DIR)/dpml_pow_t_ta
 
 $(OBJ_DIR)/dpml_tgamma_t.$O :: $(F128_DIR)/dpml_tgamma.c $(F128_DIR)/dpml_special_exp.h
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_NAME) $(D_F_TYPE) $<
- 
+
 $(OBJ_DIR)/dpml_special_exp_t.$O :: $(F128_DIR)/dpml_exp.c \
                                   $(F128_DIR)/dpml_pow_t_table.c
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) -DSPECIAL_EXP -DT_FLOAT $<
- 
- 
+
+
 $(OBJ_DIR)/dpml_pow_t_table.$O \
 $(OBJ_DIR)/dpml_cbrt_t_table.$O :: $(OBJ_DIR)/%.$O : $(F128_DIR)/%.c
 	$(CC) -c $(FO)$@ $(F53_CFLAGS) $(D_F_TYPE) $<
 
-                                                           
+
 cleanBinary :
 	$(RM) $(F128_OBJS) $(F53_OBJS)
 
