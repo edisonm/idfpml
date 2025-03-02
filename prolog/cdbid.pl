@@ -36,6 +36,7 @@
 
 :- use_module(library(bid_eval)).
 :- use_module(library(neck)).
+:- use_module(library(clpcd/domain_ops)).
 :- init_expansors.
 
 cd_type(cddd, bid64 ).
